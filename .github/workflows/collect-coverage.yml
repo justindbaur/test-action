@@ -6,11 +6,15 @@ on:
     types: [created]
 
 jobs:
-  verify-allowed:
+  verify_allowed:
     if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/cc')
     runs-on: ubuntu-20.04
+    outputs:
+      pull_head: ${{ steps.pull_details.outputs.pull_head }}
+      pull_base: ${{ steps.pull_details.outputs.pull_base }}
     steps:
     - name: Check Collaborator
+      id: check_collaborator
       uses: actions/github-script@v6
       with:
         # We could wrap this in a try/catch and create a comment that they aren't allowed to run this action if we want
@@ -20,14 +24,27 @@ jobs:
             repo: context.repo.repo,
             username: context.payload.comment.user.login
           });
-          console.log(context.payload.issue.pull_request);
 
-  # run-tests:
-  #   runs-on: ubuntu-20.04
-  #   needs: verify-allowed
-  #   strategy:
-  #     matrix:
-  #       ref: [one, two]
-  #   steps:
-  #   - name: Checkout repo
-  #     run: 'echo ${{ matrix.ref }}'
+    - name: Get Pull Request Details
+      id: pull_details
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const pull = await github.rest.pulls.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            pull_number: context.issue.number
+          });
+
+          core.setOutput("pull_head", pull.data.head.ref);
+          core.setOutput("pull_base", pull.data.base.ref);
+
+  run_tests:
+    runs-on: ubuntu-20.04
+    needs: verify_allowed
+    strategy:
+      matrix:
+        ref: [${{ needs.verify_allowed.outputs.pull_head}}, ${{ needs.verify_allowed.outputs.pull_base}}]
+    steps:
+    - name: Checkout repo
+      run: 'echo ${{ matrix.ref }}'

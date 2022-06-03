@@ -1,4 +1,5 @@
 import { getOctokit } from "@actions/github";
+import core from "@actions/core";
 
 
 async function main(): Promise<void> {
@@ -13,13 +14,17 @@ async function main(): Promise<void> {
         log: console
     });
 
-    const membership = await github.rest.repos.checkCollaborator({
-        owner: "bitwarden",
-        repo: "server",
-        username: "sudoevan"
+    const pull = await github.rest.pulls.get({
+        owner: "justindbaur",
+        repo: "test-action",
+        pull_number: 1
     });
 
-    console.log(membership.status);
+    console.log(pull.data.head.ref);
+    console.log(pull.data.base.ref);
+
+    core.setOutput("pull_head", pull.data.head.ref);
+    core.setOutput("pull_base", pull.data.base.ref);
 }
 
 main()

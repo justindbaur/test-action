@@ -20,12 +20,13 @@ function main() {
         const github = (0, github_1.getOctokit)(token, {
             log: console
         });
-        const membership = yield github.rest.repos.checkCollaborator({
-            owner: "bitwarden",
-            repo: "server",
-            username: "sudoevan"
+        const pull = yield github.rest.pulls.get({
+            owner: "justindbaur",
+            repo: "test-action",
+            pull_number: 1
         });
-        console.log(membership.status);
+        console.log(pull.data.head.ref);
+        console.log(pull.data.base.ref);
     });
 }
 main()
