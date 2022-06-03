@@ -6,28 +6,27 @@ on:
     types: [created]
 
 jobs:
-  collect-coverage:
+  verify-allowed:
     if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/cc')
     runs-on: ubuntu-20.04
     steps:
     - name: Check Collaborator
       uses: actions/github-script@v6
       with:
-        debug: true
+        # We could wrap this in a try/catch and create a comment that they aren't allowed to run this action if we want
         script: |
           await github.rest.repos.checkCollaborator({
             owner: context.repo.owner,
             repo: context.repo.repo,
             username: context.payload.comment.user.login
           });
-    - name: Make Comment
-      uses: actions/github-script@v6
-      with:
-        debug: true
-        script: |
-          await github.rest.issues.createComment({
-            issue_number: context.issue.number,
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            body: 'You are allowed to get code coverage'
-          });
+          console.log(context);
+
+  run-tests:
+    needs: verify-allowed
+    strategy:
+      matrix:
+        ref: [one, two]
+    steps:
+    - name: Checkout repo
+      run: 'echo ${{ matrix.ref }}'
