@@ -20,7 +20,7 @@ jobs:
             repo: context.repo.repo,
             username: context.payload.comment.user.login
           });
-          console.log(context.issue.pull_request);
+          console.log(context.payload.issue.pull_request);
 
   # run-tests:
   #   runs-on: ubuntu-20.04
