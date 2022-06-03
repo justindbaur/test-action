@@ -5,6 +5,9 @@ on:
   issue_comment:
     types: [created]
 
+permissions:
+  
+
 jobs:
   collect-coverage:
     if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/cc')
@@ -13,6 +16,7 @@ jobs:
     - name: Post reply comment
       uses: actions/github-script@v6
       with:
+        debug: true
         script: |
           await github.issues.createComment({
             issue_number: context.issue.number,
