@@ -42,9 +42,14 @@ jobs:
   run_tests:
     runs-on: ubuntu-20.04
     needs: verify_allowed
-    strategy:
-      matrix:
-        ref: [${{ needs.verify_allowed.outputs.pull_head}}, ${{ needs.verify_allowed.outputs.pull_base}}]
     steps:
-    - name: Checkout repo
-      run: 'echo ${{ matrix.ref }}'
+    - name: Checkout HEAD
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ needs.verify_allowed.outputs.pull_head }}
+        path: './head'
+    - name: Checkout base
+      uses: actions/checkout@v3
+      with:
+        ref: ${{ needs.verify_allowed.outputs.pull_base }}
+        path: ./base
