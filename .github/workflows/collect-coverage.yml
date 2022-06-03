@@ -23,6 +23,7 @@ jobs:
           console.log(context);
 
   run-tests:
+    runs-on: ubuntu-20.04
     needs: verify-allowed
     strategy:
       matrix:
