@@ -25,31 +25,24 @@ jobs:
             username: context.payload.comment.user.login
           });
 
-    - name: Get Pull Request Details
-      id: pull_details
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const pull = await github.rest.pulls.get({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            pull_number: context.issue.number
-          });
-
-          core.setOutput("pull_head", pull.data.head.ref);
-          core.setOutput("pull_base", pull.data.base.ref);
-
   run_tests:
     runs-on: ubuntu-20.04
     needs: verify_allowed
     steps:
-    - name: Checkout HEAD
-      uses: actions/checkout@v3
+    - uses: actions/checkout@v3
+    - name: Install dotnet
+      uses: actions/setup-dotnet@v2
       with:
-        ref: ${{ needs.verify_allowed.outputs.pull_head }}
-        path: './head'
-    - name: Checkout base
-      uses: actions/checkout@v3
-      with:
-        ref: ${{ needs.verify_allowed.outputs.pull_base }}
-        path: ./base
+        dotnet-version: '6.0.x'
+    - name: Install Report Generator
+      run: dotnet tool install -g dotnet-reportgenerator-globaltool
+    - name: Restore
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
+    - name: Run Unit Tests
+      run: |
+        dotnet test ./test/Test.csproj --collect "XPlat Code Coverage" --results-directory "$RUNNER_TEMP/UnitTestStaging"
+    - name: Combine Unit Tests
+      run: reportgenerator -reports:"$RUNNER_TEMP/UnitTestStaging/**/*.cobertura.xml" -targetdir:"UnitTest"
+    
