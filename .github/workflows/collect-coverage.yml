@@ -43,6 +43,11 @@ jobs:
     - name: Run Unit Tests
       run: |
         dotnet test ./test/Test.csproj --collect "XPlat Code Coverage" --results-directory "$RUNNER_TEMP/UnitTestStaging"
-    - name: Combine Unit Tests
-      run: reportgenerator -reports:"$RUNNER_TEMP/UnitTestStaging/**/*.cobertura.xml" -targetdir:"UnitTest"
-    
+    - name: Create Json Summary
+      run: reportgenerator -reports:"$RUNNER_TEMP/UnitTestStaging/**/*.cobertura.xml" -targetdir:"UnitTest" -reports:"JsonSummary"
+    - name: Create Comment
+      uses: actions/github-script@v6
+      with:
+        script: |
+          const fs = require('fs');
+          console.log(process.env.RUNNER_TEMP);
