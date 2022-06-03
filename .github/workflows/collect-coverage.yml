@@ -1,0 +1,22 @@
+---
+name: Collect Code Coverage
+
+on:
+  issue_comment:
+    types: [created]
+
+jobs:
+  collect-coverage:
+    if: github.event.issue.pull_request != '' && contains(github.event.comment.body, '/cc')
+    runs-on: ubuntu-20.04
+    steps:
+    - name: Post reply comment
+      uses: actions/github-script@v6
+      with:
+        script: |
+          await github.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: 'Thanks for trying to collect coverage'
+          });
